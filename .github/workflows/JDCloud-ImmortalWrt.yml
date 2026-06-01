@@ -7,7 +7,7 @@ on:
   #   - cron: "0 18 * * *"
 
 env:
-  REPO_URL: git@github.com:ABCU/openwrt-6.x.git
+  REPO_URL: https://github.com/ABCU/openwrt-6.x.git
   REPO_BRANCH: master
   CONFIG_FILE: configs/JDCloud.config
   GENERAL_CONFIG_FILE: configs/General.config

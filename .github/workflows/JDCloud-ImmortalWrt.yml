@@ -261,6 +261,12 @@ jobs:
           done
         fi
 
+    - name: Setup Configuration(配置编译选项)
+      run: |
+        cat $GITHUB_WORKSPACE/$CONFIG_FILE $GITHUB_WORKSPACE/$GENERAL_CONFIG_FILE > /mnt/openwrt/.config
+        cd /mnt/openwrt
+        make defconfig
+
     - name: Compile Firmware(开始编译固件)
       id: compile
       run: |

@@ -276,8 +276,16 @@ jobs:
       run: |
         cd /mnt/openwrt
         echo -e "$(nproc) thread compile"
-        make -j$(nproc) || make -j1 || make -j1 V=s
-        echo "status=success" >> $GITHUB_OUTPUT
+        if make -j$(nproc); then
+          echo "status=success" >> $GITHUB_OUTPUT
+        elif make -j1; then
+          echo "status=success" >> $GITHUB_OUTPUT
+        elif make -j1 V=s; then
+          echo "status=success" >> $GITHUB_OUTPUT
+        else
+          echo "status=failed" >> $GITHUB_OUTPUT
+          exit 1
+        fi
         echo "DATE=$(date +"%Y-%m-%d %H:%M:%S")" >> $GITHUB_ENV
         echo "FILE_DATE=$(date +"%Y.%m.%d")" >> $GITHUB_ENV
 
@@ -331,7 +339,7 @@ jobs:
       run: |
         source /tmp/firmware/meta.env
         cd /tmp/firmware/target
-        echo "=== 实际文件列表 ==="
+        echo "=== 实际文件列表（整理前）==="
         ls -la
         cp /tmp/firmware/firmware.config Arthur.Athena.config
         mv -f config.buildinfo Arthur.Athena.config.buildinfo 2>/dev/null || echo "config.buildinfo not found"
@@ -349,6 +357,19 @@ jobs:
         fi
         tar -zcf Arthur.Athena.Packages.tar.gz packages
         rm -rf packages feeds.buildinfo version.buildinfo sha256sums profiles.json
+        # 重命名固件镜像文件（.bin / .itb / .img / .tar / .ubi 等）
+        echo "=== 查找固件镜像文件 ==="
+        find . -type f \( -name "*.bin" -o -name "*.itb" -o -name "*.img" -o -name "*.tar" -o -name "*.ubi" \) | while IFS= read -r f; do
+          base=$(basename "$f")
+          # 跳过已重命名的文件
+          case "$base" in Arthur.Athena.*) continue ;; esac
+          mv "$f" "Arthur.Athena.$base"
+          echo "  已重命名: $base -> Arthur.Athena.$base"
+        done
+        # 清理空的子目录
+        find . -type d -empty -delete 2>/dev/null || true
+        echo "=== 整理后所有文件 ==="
+        find . -type f | sort
         echo "FIRMWARE_PATH=$PWD" >> $GITHUB_ENV
         echo "DATE=$DATE" >> $GITHUB_ENV
         echo "FILE_DATE=$FILE_DATE" >> $GITHUB_ENV
@@ -362,7 +383,7 @@ jobs:
         allowUpdates: true
         tag: ${{ env.FIRMWARE_TAG }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/*
+        artifacts: ${{ env.FIRMWARE_PATH }}/**
         body: |
           **This is OpenWrt Firmware for ${{ env.FIRMWARE_TAG }}**
           ### 📒 固件信息

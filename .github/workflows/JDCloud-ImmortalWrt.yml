@@ -284,11 +284,13 @@ jobs:
     - name: Prepare Artifacts(准备固件产物)
       if: steps.compile.outputs.status == 'success'
       run: |
-        mkdir -p /tmp/firmware-artifacts
+        mkdir -p /tmp/firmware-artifacts/target
         cp -a /mnt/openwrt/.config /tmp/firmware-artifacts/
         DEVICE_TARGET=${{ needs.Source.outputs.DEVICE_TARGET }}
         DEVICE_SUBTARGET=${{ needs.Source.outputs.DEVICE_SUBTARGET }}
-        cp -a /mnt/openwrt/bin/targets/$DEVICE_TARGET/$DEVICE_SUBTARGET /tmp/firmware-artifacts/target/
+        echo "=== 编译输出目录 ==="
+        ls -la /mnt/openwrt/bin/targets/$DEVICE_TARGET/$DEVICE_SUBTARGET/
+        cp -a /mnt/openwrt/bin/targets/$DEVICE_TARGET/$DEVICE_SUBTARGET/. /tmp/firmware-artifacts/target/
         mkdir -p /tmp/firmware-artifacts/packages
         find /mnt/openwrt/bin/packages -name "*.apk" -exec cp -a {} /tmp/firmware-artifacts/packages/ \;
         # Save metadata for PostCompile/Release job

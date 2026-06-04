@@ -375,17 +375,18 @@ jobs:
   # Job 7: 清理缓存 — 与PostCompile并行执行
   # ============================================================
   Cleanup:
-    needs: Compile
+    needs: [Compile, Source]
     runs-on: ubuntu-24.04
 
     steps:
-    - name: Checkout(检出代码，需SOURCE_REPO等变量)
+    - name: Checkout(检出代码)
       uses: actions/checkout@main
 
     - name: Delete Old Cache(删除旧缓存)
       run: |
-        gh cache list --key ${{ needs.Source.outputs.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ needs.Source.outputs.DEVICE_TARGET }}-${{ needs.Source.outputs.DEVICE_SUBTARGET }}- --json key --jq '.[] | .key' | while read -r key; do
-          gh cache delete "$key"
+        # 按ID删除（key含空格，用ID更可靠）
+        gh cache list --key ${{ needs.Source.outputs.SOURCE_REPO }}-${{ env.REPO_BRANCH }}-${{ needs.Source.outputs.DEVICE_TARGET }}-${{ needs.Source.outputs.DEVICE_SUBTARGET }}- --json id --jq '.[] | .id' | while IFS= read -r id; do
+          gh cache delete "$id"
         done
         echo "========cache status========"
         echo "ccache: $(du -sh /mnt/openwrt/.ccache 2>/dev/null | cut -f 1)"

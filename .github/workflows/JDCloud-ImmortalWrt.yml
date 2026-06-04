@@ -293,8 +293,8 @@ jobs:
         find /mnt/openwrt/bin/packages -name "*.apk" -exec cp -a {} /tmp/firmware-artifacts/packages/ \;
         # Save metadata for PostCompile/Release job
         cat > /tmp/firmware-artifacts/meta.env <<META
-        DATE=$(date +"%Y-%m-%d %H:%M:%S")
-        FILE_DATE=$(date +"%Y.%m.%d")
+        DATE="$(date +"%Y-%m-%d %H:%M:%S")"
+        FILE_DATE="$(date +"%Y.%m.%d")"
         VERSION_INFO='${{ needs.Source.outputs.VERSION_INFO }}'
         VERSION_KERNEL=${{ needs.Source.outputs.VERSION_KERNEL }}
         META

@@ -16,6 +16,10 @@ env:
   FIRMWARE_TAG: JDCloud
   TZ: Asia/Shanghai
 
+permissions:
+  contents: write
+  actions: write
+
 jobs:
   # ============================================================
   # Job 1: 环境初始化 (~2min，失败只重跑此job)
@@ -285,7 +289,7 @@ jobs:
       if: steps.compile.outputs.status == 'success'
       run: |
         mkdir -p /tmp/firmware-artifacts/target
-        cp -a /mnt/openwrt/.config /tmp/firmware-artifacts/
+        cp -a /mnt/openwrt/.config /tmp/firmware-artifacts/firmware.config
         DEVICE_TARGET=${{ needs.Source.outputs.DEVICE_TARGET }}
         DEVICE_SUBTARGET=${{ needs.Source.outputs.DEVICE_SUBTARGET }}
         echo "=== 编译输出目录 ==="
@@ -329,7 +333,7 @@ jobs:
         cd /tmp/firmware/target
         echo "=== 实际文件列表 ==="
         ls -la
-        cp /tmp/firmware/.config Arthur.Athena.config
+        cp /tmp/firmware/firmware.config Arthur.Athena.config
         mv -f config.buildinfo Arthur.Athena.config.buildinfo 2>/dev/null || echo "config.buildinfo not found"
         # 通配符匹配manifest（不同分支命名不同）
         manifest_file=$(ls *.manifest 2>/dev/null | head -1)

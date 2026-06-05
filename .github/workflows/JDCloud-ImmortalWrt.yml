@@ -321,6 +321,7 @@ jobs:
         VERSION_INFO='${{ needs.Source.outputs.VERSION_INFO }}'
         VERSION_KERNEL=${{ needs.Source.outputs.VERSION_KERNEL }}
         KERNEL_SHORT=${{ needs.Source.outputs.KERNEL_SHORT }}
+        HASH=${{ needs.Source.outputs.HASH }}
         META
 
     - name: Upload Artifacts(上传固件产物)
@@ -386,13 +387,14 @@ jobs:
         echo "VERSION_INFO=$VERSION_INFO" >> $GITHUB_ENV
         echo "VERSION_KERNEL=$VERSION_KERNEL" >> $GITHUB_ENV
         echo "KERNEL_SHORT=$KERNEL_SHORT" >> $GITHUB_ENV
+        echo "HASH=$HASH" >> $GITHUB_ENV
 
     - name: Upload Firmware To Release(发布固件)
       uses: ncipollo/release-action@main
       with:
         name: ${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}-${{ env.FILE_DATE }}
+        tag: ${{ env.FIRMWARE_TAG }}-${{ env.HASH }}
         token: ${{ secrets.GITHUB_TOKEN }}
         artifacts: ${{ env.FIRMWARE_PATH }}/Arthur.Athena.*
         body: |

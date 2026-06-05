@@ -392,9 +392,9 @@ jobs:
       with:
         name: ${{ env.DATE }} for ${{ env.FIRMWARE_TAG }}
         allowUpdates: true
-        tag: ${{ env.FIRMWARE_TAG }}
+        tag: ${{ env.FIRMWARE_TAG }}-${{ env.FILE_DATE }}
         token: ${{ secrets.GITHUB_TOKEN }}
-        artifacts: ${{ env.FIRMWARE_PATH }}/**
+        artifacts: ${{ env.FIRMWARE_PATH }}/Arthur.Athena.*
         body: |
           # ${{ env.FIRMWARE_TAG }} OpenWrt 固件
 
@@ -445,3 +445,18 @@ jobs:
         token: ${{ secrets.GITHUB_TOKEN }}
         retain_days: 2
         keep_minimum_runs: 0
+
+    - name: Delete Old Releases(保留最近5条release)
+      run: |
+        echo "=== 当前 releases ==="
+        gh release list --limit 20 --json tagName,createdAt
+        echo "=== 删除旧 releases（保留最近5条）==="
+        gh release list --limit 20 --json tagName --jq '.[].tagName' | tail -n +6 | while IFS= read -r tag; do
+          # 只删除匹配本固件 tag 前缀的 release（JDCloud-*），避免误删其他
+          case "$tag" in ${{ env.FIRMWARE_TAG }}-*)
+            echo "删除: $tag"
+            gh release delete "$tag" --yes || true
+          ;; esac
+        done
+      env:
+        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

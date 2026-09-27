@@ -1,0 +1,28 @@
+name: JDCloud-AX1800Pro
+
+on:
+  workflow_dispatch:
+  workflow_call:
+  # schedule:
+  #   - cron: "0 18 * * *"
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  Build:
+    uses: ./.github/workflows/Build-OpenWrt.yml
+    permissions:
+      contents: write
+      actions: write
+    with:
+      repo_url: https://github.com/laipeng668/immortalwrt.git
+      repo_branch: openwrt-25.12
+      config_file: configs/JDCloud.AX1800Pro.config
+      firmware_tag: JDCloud-AX1800Pro
+      kernel_file: kernel-6.18
+      artifact_prefix: Arthur
+      manifest_file: immortalwrt-qualcommax-ipq60xx.manifest
+      release_summary: >-
+        这是京东云无线宝 AX1800 Pro（亚瑟 / Arthur / JDCloud RE-SS-01，IPQ6000 / 512MB RAM）单机型固件，开启全功能NSS、6.18内核，默认主题为Aurora；添加了额外的软件包cpufreq、ddns、upnp、wol、samba4、vlmcsd、aria2、autoreboot、uhttpd、frps、frpc、diskman、hd-idle、acme、openlist2、wireguard、watchcat、3cat、passwall，并添加了若干工具，具体详见JDCloud.AX1800Pro.config和General.config。刷机请使用 factory.bin（U-Boot 刷入），同系统升级使用 sysupgrade.bin。

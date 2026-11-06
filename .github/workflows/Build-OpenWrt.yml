@@ -252,6 +252,20 @@ jobs:
         cd "$OPENWRT_PATH"
         ./scripts/feeds update -a
 
+    - name: Fix NSS ECM Patch Kernel Guard(修正 ECM 补丁内核守卫)
+      run: |
+        # 上游 nss-packages feed 的 0028 补丁守卫写死 (6,18,0)，但 sockaddr_unsized
+        # 内核 6.18.57 才引入；6.18.0~6.18.56 上会注入不存在的类型导致 ECM 编译失败。
+        # 这里把守卫修正为 (6,18,57)：旧内核走原 bind() 签名，新内核走 sockaddr_unsized。
+        P="$OPENWRT_PATH/feeds/nss_packages/qca-nss-ecm/patches/0028-kernel-6.18-sockaddr-bind.patch"
+        if [ -f "$P" ]; then
+          sed -i 's/KERNEL_VERSION(6, 18, 0)/KERNEL_VERSION(6, 18, 57)/' "$P"
+          echo "=== patched guard ==="
+          grep -n "KERNEL_VERSION(6, 18" "$P"
+        else
+          echo "ECM patch not found, skip (non-NSS workflow)"
+        fi
+
     - name: Load Custom Configuration(加载自定义配置)
       env:
         CONFIG_FILE: ${{ inputs.config_file }}

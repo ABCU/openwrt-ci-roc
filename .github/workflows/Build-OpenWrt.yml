@@ -305,7 +305,17 @@ jobs:
       run: |
         cd "$OPENWRT_PATH"
         echo -e "$(nproc) thread compile"
-        make -j"$(nproc)" || make -j1 V=s
+        set -o pipefail
+        make -j"$(nproc)" 2>&1 | tee "$GITHUB_WORKSPACE/build-verbose.log" || \
+        make -j1 V=s 2>&1 | tee -a "$GITHUB_WORKSPACE/build-verbose.log"
+
+    - name: Collect Build Logs On Failure(失败时收集编译日志)
+      if: failure()
+      run: |
+        mkdir -p "$GITHUB_WORKSPACE/build-logs"
+        cp -r /mnt/openwrt/logs "$GITHUB_WORKSPACE/build-logs/" 2>/dev/null || true
+        cp /mnt/openwrt/.config "$GITHUB_WORKSPACE/build-logs/" 2>/dev/null || true
+        du -sh "$GITHUB_WORKSPACE/build-logs" 2>/dev/null || true
 
     - name: Upload Build Logs On Failure(失败时上传编译日志)
       if: failure()
@@ -315,8 +325,8 @@ jobs:
         retention-days: 7
         if-no-files-found: ignore
         path: |
-          /mnt/openwrt/logs/
-          /mnt/openwrt/.config
+          build-logs/
+          build-verbose.log
 
     - name: Check Space Usage(检查空间使用情况)
       if: (!cancelled())

@@ -307,6 +307,17 @@ jobs:
         echo -e "$(nproc) thread compile"
         make -j"$(nproc)" || make -j1 V=s
 
+    - name: Upload Build Logs On Failure(失败时上传编译日志)
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-logs-${{ inputs.artifact_prefix }}
+        retention-days: 7
+        if-no-files-found: ignore
+        path: |
+          /mnt/openwrt/logs/
+          /mnt/openwrt/.config
+
     - name: Check Space Usage(检查空间使用情况)
       if: (!cancelled())
       run: df -hT

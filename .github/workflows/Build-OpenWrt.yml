@@ -151,8 +151,9 @@ jobs:
         cd "$OPENWRT_PATH"
         if [ -n "$REPO_REF" ]; then
           echo "Pinning source to $REPO_REF (repo_ref input)"
-          git fetch --depth 1 origin "$REPO_REF"
-          git checkout --detach FETCH_HEAD
+          git fetch --depth 1 origin "$REPO_REF" || { echo "Error: failed to fetch pinned ref $REPO_REF" >&2; exit 1; }
+          git checkout --detach FETCH_HEAD || { echo "Error: failed to checkout pinned ref $REPO_REF" >&2; exit 1; }
+          echo "Pinned to: $(git rev-parse HEAD)"
         fi
         VERSION_INFO="$(git show -s --date=short --format="作者: %an<br/>时间: %cd<br/>内容: %s<br/>hash: %H")"
         {

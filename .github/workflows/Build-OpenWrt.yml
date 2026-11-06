@@ -9,6 +9,11 @@ on:
       repo_branch:
         required: true
         type: string
+      repo_ref:
+        required: false
+        type: string
+        default: ""
+        description: "可选：锁定源码 commit/tag（空=分支头）"
       config_file:
         required: true
         type: string
@@ -123,6 +128,7 @@ jobs:
       env:
         REPO_URL: ${{ inputs.repo_url }}
         REPO_BRANCH: ${{ inputs.repo_branch }}
+        REPO_REF: ${{ inputs.repo_ref }}
         KERNEL_FILE: ${{ inputs.kernel_file }}
       run: |
         df -hT "$GITHUB_WORKSPACE"
@@ -143,6 +149,11 @@ jobs:
           sleep $((attempt * 5))
         done
         cd "$OPENWRT_PATH"
+        if [ -n "$REPO_REF" ]; then
+          echo "Pinning source to $REPO_REF (repo_ref input)"
+          git fetch --depth 1 origin "$REPO_REF"
+          git checkout --detach FETCH_HEAD
+        fi
         VERSION_INFO="$(git show -s --date=short --format="作者: %an<br/>时间: %cd<br/>内容: %s<br/>hash: %H")"
         {
           echo "version_info<<EOF"

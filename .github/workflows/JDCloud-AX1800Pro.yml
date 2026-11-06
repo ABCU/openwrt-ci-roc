@@ -2,7 +2,18 @@ name: JDCloud-AX1800Pro
 
 on:
   workflow_dispatch:
+    inputs:
+      repo_ref:
+        description: "可选：锁定源码 commit/tag（空=分支头）"
+        required: false
+        type: string
+        default: ""
   workflow_call:
+    inputs:
+      repo_ref:
+        required: false
+        type: string
+        default: ""
   # schedule:
   #   - cron: "0 18 * * *"
 
@@ -17,6 +28,7 @@ jobs:
       contents: write
       actions: write
     with:
+      repo_ref: ${{ inputs.repo_ref }}
       repo_url: https://github.com/laipeng668/immortalwrt.git
       repo_branch: openwrt-25.12
       config_file: configs/JDCloud.AX1800Pro.config

@@ -418,10 +418,19 @@ jobs:
         name: ${{ needs.Build.outputs.artifact_name }}
         path: artifacts/firmware
 
+    - name: Compose Release Title(标题=tag+构建日期+基线短hash)
+      id: rel_title
+      run: |
+        DATE=$(date -u +%Y-%m-%d)
+        HASH=$(printf '%s' "${{ needs.Build.outputs.version_info }}" | grep -oE 'hash: [0-9a-f]{40}' | head -1 | cut -d' ' -f2 | cut -c1-8)
+        TITLE="${{ inputs.firmware_tag }} ${DATE} @${HASH:-nobaseline}"
+        echo "title=$TITLE" >> "$GITHUB_OUTPUT"
+        echo "Release title: $TITLE"
+
     - name: Upload Firmware To Release(发布固件)
       uses: ncipollo/release-action@v1
       with:
-        name: ${{ inputs.firmware_tag }}
+        name: ${{ steps.rel_title.outputs.title }}
         allowUpdates: true
         replacesArtifacts: true
         artifactErrorsFailBuild: true
